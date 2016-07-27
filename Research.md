@@ -121,6 +121,66 @@ A combination of the Chrome Developer Tools and the `curl` command line utility 
 		"thumb_url": "\/files\/3sw4i3wpq25qm46s\/testing\/thumb.png?nimg"
 	}
 	```
-Explain params
+	`convert_result` is the filename of the newly converted document. `thumb_url` is a URI leading to a 125x77 screenshot of the converted document. The query (`nimg`) appears to be another randomly generated cache-busting mechanism.
 
-* Download
+	> **NOTE:** If you visit this endpoint before  hitting the previous one, you will get the following error:
+
+	```json
+	{
+		"details": "Conversion error.",
+		"status": "error"
+	}
+	```
+
+	> This does not actually mean the conversion failed, it just means that it was never started. Apparently, you have to trigger the conversion manually.
+
+
+* Finally, to download the file, the page sends a GET request to `/download/<sid>/<fid>/<convert_result>?rnd=<rnd`. This link is generated in an anonymous function assigned as a click event handler:
+
+	```javascript
+	$("#" + data.fid + " div.plupload_file_button" + (thumbnail_clickable ? ", #" + data.fid + " .plupload_thumb" : "")).click(function() {
+			downloadURI("download/" + data.sid + "/" + data.fid + "/" + data.convert_result + "?rnd=" + Math.random(), data.convert_result);
+	});
+	```
+
+	And here's the source for `downloadURI`:
+	```javascript
+	function downloadURI(uri, name) {
+	    if (HTMLElement.prototype.click) {
+	        var link = document.createElement("a");
+	        link.download = name;
+	        link.href = uri;
+	        link.style.display = "none";
+	        document.body.appendChild(link);
+	        link.click();
+	        setTimeout(function() { link.remove(); }, 500);
+	    } else {
+	        window.location.href = uri;
+	    }
+	}
+	```
+	> http://pdf2doc.com/js/main.js
+
+	Example `curl`:
+
+	```
+	curl http://pdf2doc.com/download/3sw4i3wpq25qm46s/testing/Test.doc
+	```
+
+	The response is, of course, the file itself.
+
+### Conclusion
+
+* There are four main API endpoints:
+	* `/upload`
+	* `/convert`
+	* `/status`
+	* `/download`
+
+* Every endpoint uses a combination of a session ID (`sid`) and file ID (`fid`) which are both generated client-side.
+* There is no form of authentication.
+* There may be rate-limiting, but I don't expect this tool to be used so frequently by its users that rate-limiting actually becomes a problem.
+
+### Next Steps
+
+I will be using Python 2.7 with the [requests]() library to automate this process. In addition, I will utilize [Tkinter]() and [py2exe]() to package the software into a Windows executable with a GUI.
