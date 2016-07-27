@@ -12,22 +12,6 @@ def toBase32(x):
 		x //= 32
 	return result
 
-
-
-def frm(x, b):
-    """
-    Converts given number x, from base 10 to base b
-    x -- the number in base 10
-    b -- base to convert
-    """
-    assert(x >= 0)
-    assert(1< b < 37)
-    r = ''
-    import string
-    while x > 0:
-        r = string.printable[x % b] + r
-        x //= b
-    return r
 def sid():
 	chars = "0123456789abcdefghiklmnopqrstuvwxyz"
 	result = ""
@@ -35,10 +19,11 @@ def sid():
 		char = int(math.floor(random.random() * len(chars)))
 		result += chars[char:char + 1]
 	return result
-def fid():
-	timestamp = int(time.time() * 1000) # Python equivalent of new Date().getTime()
-	return toBase32(timestamp)
 
-print(fid())
-print(fid())
+def fid():
+	uid = toBase32(int(time.time() * 1000)) # Python equivalent of new Date().getTime().toString(32)
+	for x in xrange(5):
+		uid += toBase32(int(math.floor(random.random() * 65535)))
+	return "o_" + uid + toBase32(1)
+
 print(fid())

@@ -12,5 +12,4 @@ var guid = (function() {
 	};
 });
 
-console.log(new Date().getTime());
-console.log(new Date().getTime().toString(32));
+console.log(guid()());
