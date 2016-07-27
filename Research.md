@@ -12,7 +12,7 @@ A combination of the Chrome Developer Tools and the `curl` command line utility 
 
 ### Discoveries
 
-* The website uses the [Plupload](https://github.com/moxiecode/plupload) API to handle file uploads and progress notifications.
+* The website uses the [Plupload](https://github.com/moxiecode/plupload) API to handle file uploads.
 
 * Uploads and progress notifications are done through AJAX - the page never reloads.
 
@@ -51,4 +51,76 @@ A combination of the Chrome Developer Tools and the `curl` command line utility 
 	* `id` The file ID (`fid`)
 	* `file` The file itself, in binary format.
 
-	> **NOTES:** Although `sid` and `fid` are generated using the methods above, the fact that they are created client-side means that you can substitute your own values if you so wish. `fid` appears to accept any value, while `sid` must be 16 characters in order to be processed.
+	> **NOTE:** Although `sid` and `fid` are generated using the methods above, the fact that they are created client-side means that you can substitute your own values if you so wish. `fid` appears to accept any value, while `sid` must be 16 characters long in order to be processed.
+
+	An example `curl` looks like this:
+
+	```
+	curl -X POST -F "name=ID-Test.pdf" -F "id=testing" -F "file=@Test.pdf" -H "Content-Type: multipart/form-data" http://pdf2doc.com/upload/3sw4i3wpq25qm46s
+	```
+
+	The response is sent as JSON and looks like this:
+
+	```json
+	{
+		"data": {
+			"file": "Test.pdf",
+			"file_size_human": "74K"
+		},
+		"id": "testing",
+		"jsonrpc": "2.0",
+		"result": null
+	}
+	```
+* Immediately after uploading, the page sends a GET request to `/convert/<sid>/<fid>?rnd=<rnd>`. `rnd` appears to just be a value generated using `Math.random()` and has no significance to the request (it can be omitted without consequence). I believe `rnd` simply acts as a cache-busting mechanism.
+
+	An example `curl` looks like this:
+
+	```
+	curl http://pdf2doc.com/convert/3sw4i3wpq25qm46s/testing
+	```
+
+	And the response:
+
+	```json
+	{"status": "success"}
+	```
+
+	I wasn't able to get a conversion to fail (I didn't really try) but it is certainly possible - and if it does, this is probably where you can find out.
+
+* The conversion can be monitored through the `/status/<sid>/<fid>?rnd=<rnd` endpoint. `rnd` serves the same purpose here as it did previously.
+
+	An example `curl` looks like this:
+
+	```
+	curl http://pdf2doc.com/status/3sw4i3wpq25qm46s/testing
+	```
+
+	Response:
+
+	```json
+	{
+		"fid": "testing",
+		"progress": 0,
+		"sid": "3sw4i3wpq25qm46s",
+		"status": "processing",
+		"status_text": null
+	}
+	```
+
+	Presumably, `progress` changes over time to reflect how close the conversion is to being completed. In addition, the JSON format changes once the conversion is completed:
+
+	```json
+	{
+		"convert_result": "Test.doc",
+		"fid": "testing",
+		"progress": 100,
+		"savings": null,
+		"sid":" 3sw4i3wpq25qm46s",
+		"status": "success",
+		"thumb_url": "\/files\/3sw4i3wpq25qm46s\/testing\/thumb.png?nimg"
+	}
+	```
+Explain params
+
+* Download
