@@ -47,7 +47,7 @@ A combination of the Chrome Developer Tools and the `curl` command line utility 
 	>https://github.com/moxiecode/plupload/blob/e8b7cc3535cb25f7148366ee8987c72ce127daed/js/moxie.js#L386-#L410
 
 * The upload process begins when a POST request with Content-Type of "multipart/form-data" is sent to the `/upload/<sid>` endpoint. The request also contains three parameters:
-	* `name` The filename, ex. "test.pdf"
+	* `name` The filename, ex. "Test.pdf"
 	* `id` The file ID (`fid`)
 	* `file` The file itself, in binary format.
 
@@ -72,7 +72,7 @@ A combination of the Chrome Developer Tools and the `curl` command line utility 
 		"result": null
 	}
 	```
-* Immediately after uploading, the page sends a GET request to `/convert/<sid>/<fid>?rnd=<rnd>`. `rnd` appears to just be a value generated using `Math.random()` and has no significance to the request (it can be omitted without consequence). I believe `rnd` simply acts as a cache-busting mechanism.
+* Immediately after uploading, the page sends a GET request to `/convert/<sid>/<fid>?rnd=<rnd>`. `rnd` is generated using `Math.random()` and can be omitted from the request. I believe it simply acts as a cache-busting mechanism.
 
 	An example `curl` looks like this:
 
@@ -123,7 +123,7 @@ A combination of the Chrome Developer Tools and the `curl` command line utility 
 	```
 	`convert_result` is the filename of the newly converted document. `thumb_url` is a URI leading to a 125x77 screenshot of the converted document. The query (`nimg`) appears to be another randomly generated cache-busting mechanism.
 
-	> **NOTE:** If you visit this endpoint before  hitting the previous one, you will get the following error:
+	> **NOTE:** If you visit this endpoint before  hitting the previous one (`/convert`), you will get the following error:
 
 	```json
 	{
@@ -132,10 +132,10 @@ A combination of the Chrome Developer Tools and the `curl` command line utility 
 	}
 	```
 
-	> This does not actually mean the conversion failed, it just means that it was never started. Apparently, you have to trigger the conversion manually.
+	> This does not actually mean the conversion failed, it just means that it was never started. The conversion must be triggered manually.
 
 
-* Finally, to download the file, the page sends a GET request to `/download/<sid>/<fid>/<convert_result>?rnd=<rnd`. This link is generated in an anonymous function assigned as a click event handler:
+* Finally, to download the file, the page sends a GET request to `/download/<sid>/<fid>/<convert_result>?rnd=<rnd>`. This link is generated in an anonymous function assigned as a click event handler:
 
 	```javascript
 	$("#" + data.fid + " div.plupload_file_button" + (thumbnail_clickable ? ", #" + data.fid + " .plupload_thumb" : "")).click(function() {
@@ -167,7 +167,7 @@ A combination of the Chrome Developer Tools and the `curl` command line utility 
 	curl http://pdf2doc.com/download/3sw4i3wpq25qm46s/testing/Test.doc
 	```
 
-	The response is, of course, the file itself.
+	The response is, of course, the file itself. However, if `sid`, `fid`, etc. are invalid, the server will send back a 500 Server Error response.
 
 ### Conclusion
 
