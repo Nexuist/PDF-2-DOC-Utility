@@ -1,5 +1,5 @@
-from uploader import Uploader
+from upload import Upload
 
-a = Uploader("test")
-print(a.sid)
-print(a.fid)
+a = Upload("Test.pdf")
+if a.online():
+	print("Online!")

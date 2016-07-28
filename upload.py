@@ -1,19 +1,43 @@
-import requests, math, random, time, string
+import requests, math, random, time, string, os
 
-class Uploader:
+class Upload:
 
-	def __init__(self, file_path):
+	def __init__(self, file_path, file_name = ""):
+		self.session = requests.Session() # All cookies persist
 		self.file_path = file_path
+		self.file_name = file_name
+		if not file_name:
+			self.file_name = os.path.basename(file_path)
+		self.site = "http://pdf2doc.com/"
 		self.sid = self.__sid()
 		self.fid = self.__fid()
 
-	def upload():
+	def online(self):
+		try:
+			req = self.session.get(self.site)
+			req.raise_for_status()
+			return True
+		except Exception as e:
+			return e
+
+
+	def upload(self):
+		try:
+			path = self.site + self.sid
+			pdf = open(self.file_path, "rb")
+			upload = {
+				"file": (self.file_name, pdf, "application/pdf")
+			}
+			req = self.session.post(path, files = upload)
+			req.raise_for_status()
+		except Exception as e:
+			return e
+
+
+	def convert(self):
 		pass
 
-	def convert():
-		pass
-
-	def status():
+	def status(self):
 		pass
 
 	def download(self, file_path):
