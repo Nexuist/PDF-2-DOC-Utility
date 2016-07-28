@@ -1,4 +1,5 @@
 import requests, math, random, time, string, os
+from requests_toolbelt import MultipartEncoder, MultipartEncoderMonitor
 
 class Upload:
 
@@ -21,15 +22,20 @@ class Upload:
 			return e
 
 
-	def upload(self):
+	def upload(self, progress_callback = None):
 		try:
-			path = self.site + self.sid
-			pdf = open(self.file_path, "rb")
-			upload = {
-				"file": (self.file_name, pdf, "application/pdf")
+			path = self.site + "upload/" + self.sid
+			params = {
+				"name": self.file_name,
+				"id": self.fid,
+				"file": (self.file_name, open(self.file_path, "rb"), "application/pdf")
 			}
-			req = self.session.post(path, files = upload)
+			params = MultipartEncoder(params)
+			self.upload_size = params.len
+			monitor = MultipartEncoderMonitor(params, progress_callback)
+			req = self.session.post(path, data = monitor, headers = {"Content-Type": "multipart/form-data"})
 			req.raise_for_status()
+			return req.content
 		except Exception as e:
 			return e
 
