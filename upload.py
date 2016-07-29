@@ -25,15 +25,17 @@ class Upload:
 	def upload(self, progress_callback = None):
 		try:
 			path = self.site + "upload/" + self.sid
-			params = {
-				"name": self.file_name,
-				"id": self.fid,
-				"file": (self.file_name, open(self.file_path, "rb"), "application/pdf")
-			}
-			params = MultipartEncoder(params)
-			self.upload_size = params.len
-			monitor = MultipartEncoderMonitor(params, progress_callback)
-			req = self.session.post(path, data = monitor, headers = {"Content-Type": "multipart/form-data"})
+			formdata = [
+				("name", self.file_name),
+				("id", self.fid),
+				("file", (self.file_name, open(self.file_path, "rb"), "application/pdf"))
+			]
+			formdata = MultipartEncoder(formdata)
+			boundary = formdata.boundary[2:]
+			self.upload_size = formdata.len
+			header = {"Content-Type": "multipart/form-data, boundary=" + boundary}
+			monitor = MultipartEncoderMonitor(formdata, progress_callback)
+			req = self.session.post(path, data = monitor, headers = header)
 			req.raise_for_status()
 			return req.content
 		except Exception as e:
