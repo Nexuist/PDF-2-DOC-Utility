@@ -1,10 +1,12 @@
 import requests, math, random, time, string, os
+from requests import Request, Session
+from requests.exceptions import RequestException
 from requests_toolbelt import MultipartEncoder, MultipartEncoderMonitor
 
 class Upload:
 
 	def __init__(self, file_path, file_name = ""):
-		self.session = requests.Session() # All cookies persist
+		self.session = Session() # All cookies persist
 		self.file_path = file_path
 		self.file_name = file_name
 		if not file_name:
@@ -13,13 +15,27 @@ class Upload:
 		self.sid = self.__sid()
 		self.fid = self.__fid()
 
-	def online(self):
+	def __request(self, req, return_json = False):
 		try:
-			req = self.session.get(self.site)
+			req = self.session.prepare_request(req)
+			req = self.session.send(req)
 			req.raise_for_status()
-			return True
+			if return_json == True:
+				return (True, req.json())
+			return (True, req)
+		except AttributeError as e:
+			return (False, "JSON decoding failed", e)
+		except RequestException as e:
+			return (False, "Response error", e)
 		except Exception as e:
-			return e
+			return (False, "Internal error", e)
+
+	def online(self):
+		req = Request("GET", self.site, False)
+		response = self.__request(req)
+		if response[0] == True:
+			return True
+		return response
 
 
 	def upload(self, progress_callback = None):
@@ -37,19 +53,32 @@ class Upload:
 			monitor = MultipartEncoderMonitor(formdata, progress_callback)
 			req = self.session.post(path, data = monitor, headers = header)
 			req.raise_for_status()
-			return req.content
-		except Exception as e:
-			return e
-
+			response = req.json()
+			print response
+			assert not "error" in response, "Response contained error"
+			assert "data" in response, "Malformed response"
+			return True
+		except requests.exceptions.ConnectionError, e:
+			return ("Connection error - http://pdf2doc.com or your Internet may be down.", str(e))
+		except AssertionError, e:
+			return (e, str(response))
+		except Exception, e:
+			return "Uncaught error: " + str(e)
 
 	def convert(self):
+		# try:
+		#
+		# except Exception, e:
+		# 	return e
 		pass
-
 	def status(self):
 		pass
 
 	def download(self, file_path):
 		pass
+
+
+
 
 	def __base32(self, x):
 		# Heavily modified version of https://www.quora.com/How-do-I-write-a-program-in-Python-that-can-convert-an-integer-from-one-base-to-another/answer/Nayan-Shah?srid=uVDVH
