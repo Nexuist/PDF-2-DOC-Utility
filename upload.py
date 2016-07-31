@@ -54,13 +54,18 @@ class Upload:
 		if response.successful():
 			json = response.json
 			if not "status" in json:
-				response.error = "Failed convert: Malformed response"
+				response.error = "Failed conversion: Malformed response"
 			elif json["status"] != "success":
-				response.error = "Failed convert: Website reported conversion failed"
+				response.error = "Failed conversion: Website reported conversion failed"
 		return response
 
 	def status(self):
-		pass
+		path = self.site + "status/%s/%s" % (self.sid, self.fid)
+		request = Request("GET", path)
+		response = self.__request(request)
+		if response.successful() and not "progress" in response.json:
+			response.error = "Failed status: Malformed response"
+		return response
 
 	def download(self, file_path):
 		pass
