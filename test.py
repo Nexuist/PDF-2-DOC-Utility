@@ -1,11 +1,16 @@
 from __future__ import division
 from upload import Upload
 
-a = Upload("Test.pdf")
-print(a.online())
-# def test(monitor):
-# 	pass
-# 	#print monitor.bytes_read / a.upload_size
-# if a.online():
-# 	#print(a.upload(test))
-# 	pass
+test = Upload("Test.pdf")
+
+def progress(monitor):
+	print monitor.bytes_read / test.upload_size
+
+if test.online():
+	print("Online!")
+	upload = test.upload()
+	print(upload.successful())
+	print(upload.error)
+	print(upload.json)
+else:
+	print("Offline!")

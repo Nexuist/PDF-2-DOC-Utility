@@ -1,20 +1,8 @@
-import requests, math, random, time, string, os
+import math, random, time, string, os, traceback
+from response import Response
 from requests import Request, Session
 from requests.exceptions import RequestException, ConnectionError
 from requests_toolbelt import MultipartEncoder, MultipartEncoderMonitor
-
-
-class Response:
-	def __init__(self, request, success, json = None, errorMessage = None, error = None):
-		self.request = request
-		self.json = json
-		self.success = success
-		self.error = error
-
-	def successful():
-		return self.success
-
-
 
 class Upload:
 	def __init__(self, file_path, file_name = ""):
@@ -27,32 +15,13 @@ class Upload:
 		self.sid = self.__sid()
 		self.fid = self.__fid()
 
-	def __request(self, req, return_json = False):
-		try:
-			req = self.session.prepare_request(req)
-			req = self.session.send(req)
-			req.raise_for_status()
-			if return_json == True:
-				return (True, req.json())
-			return (True, req)
-		except AttributeError as e:
-			return (False, "JSON decoding failed", e)
-		except ConnectionError as e:
-			return (False, "Couldn't reach website", e)
-		except RequestException as e:
-			return (False, "Problem communicating with website", e)
-		except Exception as e:
-			return (False, "Internal error", e)
-
 	def online(self):
-		req = Request("GET", self.site, False)
+		request = Request("GET", self.site)
 		response = self.__request(req)
-		if response[0] == True:
-			return True
-		return response
-
+		return response.successful()
 
 	def upload(self, progress_callback = None):
+		# Create request
 		path = self.site + "upload/" + self.sid
 		formdata = [
 			("name", self.file_name),
@@ -64,31 +33,48 @@ class Upload:
 		self.upload_size = formdata.len
 		header = {"Content-Type": "multipart/form-data, boundary=" + boundary}
 		monitor = MultipartEncoderMonitor(formdata, progress_callback)
-		req = Request("POST", path, data = monitor, headers = header)
+		request = Request("POST", path, data = monitor, headers = header)
 		response = self.__request(req, True)
-		if response[0] == True:
-			response = response[1]
-			if "error" in response:
-				return (False, "Response contained error", response)
-			if not "data" in response:
-				return (False, "Malformed response", response)
-			return True
+		# Parse response
+		if response.successful():
+		 	json = response.json
+			if "error" in json:
+				response.error = "Failed upload: Response contained error"
+			elif not "data" in json:
+				response.error = "Failed upload: Malformed response"
+		# Either the request failed, the response was wrong, or everything worked as intended
 		return response
 
 	def convert(self):
-		# try:
-		#
-		# except Exception, e:
-		# 	return e
-		pass
+		path = self.site + "convert/%s/%s" % (self.sid, self.fid)
+		request = Request("GET", self.site)
+		return path
+
 	def status(self):
 		pass
 
 	def download(self, file_path):
 		pass
 
-
-
+	def __request(self, req, return_json = False):
+		try:
+			request = self.session.prepare_request(req)
+			request = self.session.send(req)
+			request.raise_for_status()
+			json = None
+			if return_json == True:
+				json = request.json()
+			return Response(req, json)
+		except (AttributeError, ConnectionError, RequestException, Exception) as e:
+			if type(e) == AttributeError:
+				msg = "Malformed response: Couldn't decode JSON"
+			elif type(e) == ConnectionError:
+				msg = "Network problem: Couldn't reach website"
+			elif type(e) == RequestException:
+				msg = "Internal error: Requests library error"
+			elif type(e) == Exception:
+				msg = "Internal error: Uncaught exception"
+			return Response(req, error = msg, stack_trace = traceback.format_exc())
 
 	def __base32(self, x):
 		# Heavily modified version of https://www.quora.com/How-do-I-write-a-program-in-Python-that-can-convert-an-integer-from-one-base-to-another/answer/Nayan-Shah?srid=uVDVH
