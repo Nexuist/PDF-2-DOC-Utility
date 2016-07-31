@@ -3,8 +3,20 @@ from requests import Request, Session
 from requests.exceptions import RequestException, ConnectionError
 from requests_toolbelt import MultipartEncoder, MultipartEncoderMonitor
 
-class Upload:
 
+class Response:
+	def __init__(self, request, success, json = None, errorMessage = None, error = None):
+		self.request = request
+		self.json = json
+		self.success = success
+		self.error = error
+
+	def successful():
+		return self.success
+
+
+
+class Upload:
 	def __init__(self, file_path, file_name = ""):
 		self.session = Session() # All cookies persist
 		self.file_path = file_path
