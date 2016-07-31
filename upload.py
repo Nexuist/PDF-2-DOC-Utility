@@ -17,7 +17,7 @@ class Upload:
 
 	def online(self):
 		request = Request("GET", self.site)
-		response = self.__request(request, request_json = False)
+		response = self.__request(request, json = False)
 		return response.successful()
 
 	def upload(self, progress_callback = None):
@@ -65,15 +65,16 @@ class Upload:
 	def download(self, file_path):
 		pass
 
-	def __request(self, request, return_json = True):
+	def __request(self, request, json = True):
 		try:
 			request = self.session.prepare_request(request)
 			request = self.session.send(request)
 			request.raise_for_status()
-			json = None
-			if return_json == True:
+			if json == True:
 				json = request.json()
-			return Response(req, json)
+			else:
+				json = None
+			return Response(request, json)
 		except (AttributeError, ConnectionError, RequestException, Exception) as e:
 			if type(e) == AttributeError:
 				msg = "Malformed response: Couldn't decode JSON"
