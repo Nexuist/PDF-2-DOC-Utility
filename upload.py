@@ -1,6 +1,6 @@
 import requests, math, random, time, string, os
 from requests import Request, Session
-from requests.exceptions import RequestException
+from requests.exceptions import RequestException, ConnectionError
 from requests_toolbelt import MultipartEncoder, MultipartEncoderMonitor
 
 class Upload:
@@ -25,8 +25,10 @@ class Upload:
 			return (True, req)
 		except AttributeError as e:
 			return (False, "JSON decoding failed", e)
+		except ConnectionError as e:
+			return (False, "Couldn't reach website", e)
 		except RequestException as e:
-			return (False, "Response error", e)
+			return (False, "Problem communicating with website", e)
 		except Exception as e:
 			return (False, "Internal error", e)
 
@@ -39,31 +41,27 @@ class Upload:
 
 
 	def upload(self, progress_callback = None):
-		try:
-			path = self.site + "upload/" + self.sid
-			formdata = [
-				("name", self.file_name),
-				("id", self.fid),
-				("file", (self.file_name, open(self.file_path, "rb"), "application/pdf"))
-			]
-			formdata = MultipartEncoder(formdata)
-			boundary = formdata.boundary[2:]
-			self.upload_size = formdata.len
-			header = {"Content-Type": "multipart/form-data, boundary=" + boundary}
-			monitor = MultipartEncoderMonitor(formdata, progress_callback)
-			req = self.session.post(path, data = monitor, headers = header)
-			req.raise_for_status()
-			response = req.json()
-			print response
-			assert not "error" in response, "Response contained error"
-			assert "data" in response, "Malformed response"
+		path = self.site + "upload/" + self.sid
+		formdata = [
+			("name", self.file_name),
+			("id", self.fid),
+			("file", (self.file_name, open(self.file_path, "rb"), "application/pdf"))
+		]
+		formdata = MultipartEncoder(formdata)
+		boundary = formdata.boundary[2:]
+		self.upload_size = formdata.len
+		header = {"Content-Type": "multipart/form-data, boundary=" + boundary}
+		monitor = MultipartEncoderMonitor(formdata, progress_callback)
+		req = Request("POST", path, data = monitor, headers = header)
+		response = self.__request(req, True)
+		if response[0] == True:
+			response = response[1]
+			if "error" in response:
+				return (False, "Response contained error", response)
+			if not "data" in response:
+				return (False, "Malformed response", response)
 			return True
-		except requests.exceptions.ConnectionError, e:
-			return ("Connection error - http://pdf2doc.com or your Internet may be down.", str(e))
-		except AssertionError, e:
-			return (e, str(response))
-		except Exception, e:
-			return "Uncaught error: " + str(e)
+		return response
 
 	def convert(self):
 		# try:
