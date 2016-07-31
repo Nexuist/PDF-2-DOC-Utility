@@ -1,7 +1,7 @@
 import math, random, time, string, os, traceback
 from response import Response
 from requests import Request, Session
-from requests.exceptions import RequestException, ConnectionError
+from requests.exceptions import RequestException, ConnectionError, HTTPError
 from requests_toolbelt import MultipartEncoder, MultipartEncoderMonitor
 
 class Upload:
@@ -17,7 +17,7 @@ class Upload:
 
 	def online(self):
 		request = Request("GET", self.site)
-		response = self.__request(req)
+		response = self.__request(request, request_json = False)
 		return response.successful()
 
 	def upload(self, progress_callback = None):
@@ -34,7 +34,7 @@ class Upload:
 		header = {"Content-Type": "multipart/form-data, boundary=" + boundary}
 		monitor = MultipartEncoderMonitor(formdata, progress_callback)
 		request = Request("POST", path, data = monitor, headers = header)
-		response = self.__request(req, True)
+		response = self.__request(request)
 		# Parse response
 		if response.successful():
 		 	json = response.json
@@ -46,9 +46,18 @@ class Upload:
 		return response
 
 	def convert(self):
+		# Create request
 		path = self.site + "convert/%s/%s" % (self.sid, self.fid)
-		request = Request("GET", self.site)
-		return path
+		request = Request("GET", path)
+		response = self.__request(request)
+		# Parse response
+		if response.successful():
+			json = response.json
+			if not "status" in json:
+				response.error = "Failed convert: Malformed response"
+			elif json["status"] != "success":
+				response.error = "Failed convert: Website reported conversion failed"
+		return response
 
 	def status(self):
 		pass
@@ -56,10 +65,10 @@ class Upload:
 	def download(self, file_path):
 		pass
 
-	def __request(self, req, return_json = False):
+	def __request(self, request, return_json = True):
 		try:
-			request = self.session.prepare_request(req)
-			request = self.session.send(req)
+			request = self.session.prepare_request(request)
+			request = self.session.send(request)
 			request.raise_for_status()
 			json = None
 			if return_json == True:
@@ -68,13 +77,15 @@ class Upload:
 		except (AttributeError, ConnectionError, RequestException, Exception) as e:
 			if type(e) == AttributeError:
 				msg = "Malformed response: Couldn't decode JSON"
+			elif type(e) == HTTPError:
+				msg = "Server Error: Returned status code " + str(request.status_code)
 			elif type(e) == ConnectionError:
 				msg = "Network problem: Couldn't reach website"
 			elif type(e) == RequestException:
 				msg = "Internal error: Requests library error"
-			elif type(e) == Exception:
+			else:
 				msg = "Internal error: Uncaught exception"
-			return Response(req, error = msg, stack_trace = traceback.format_exc())
+			return Response(request, error = msg, stack_trace = traceback.format_exc())
 
 	def __base32(self, x):
 		# Heavily modified version of https://www.quora.com/How-do-I-write-a-program-in-Python-that-can-convert-an-integer-from-one-base-to-another/answer/Nayan-Shah?srid=uVDVH
