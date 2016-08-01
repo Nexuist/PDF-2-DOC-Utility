@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
 <interface>
-  <object class="tk.Toplevel" id="TopLevel">
+  <object class="tk.Frame" id="TopLevel">
     <property name="height">200</property>
     <property name="width">200</property>
     <child>
