@@ -75,15 +75,21 @@ class Upload:
 	def download(self, file_path):
 		assert self.convert_result != None, "Can't download without completing conversion first"
 		path = self.site + "download/%s/%s/%s" % (self.sid, self.fid, self.convert_result)
+		print path
 		request = Request("GET", path)
-		response = self.__request(request, stream = True)
+		response = self.__request(request, json = False, stream = True)
+		print "Sent request"
 		if not response.successful():
+			print(response.error)
+			print(response.stack_trace)
 			return False
 		request = response.request # For iterating through contents
+		print "Opening file"
 		try:
 			doc = open(file_path, "wb")
 		except IOError:
 			return False
+		print "Writing to file"
 		with doc:
 			for chunk in request.iter_content(chunk_size = 1024):
 				doc.write(chunk)
