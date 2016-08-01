@@ -14,6 +14,7 @@ class Upload:
 		self.site = "http://pdf2doc.com/"
 		self.sid = self.__sid()
 		self.fid = self.__fid()
+		self.convert_result = None
 
 	def online(self):
 		request = Request("GET", self.site)
@@ -63,17 +64,38 @@ class Upload:
 		path = self.site + "status/%s/%s" % (self.sid, self.fid)
 		request = Request("GET", path)
 		response = self.__request(request)
-		if response.successful() and not "progress" in response.json:
-			response.error = "Failed status: Malformed response"
+		if response.successful():
+			json = response.json
+			if not "progress" in json or (json["progress"] == 100 and not "convert_result" in json):
+				response.error = "Failed status: Malformed response"
+			if json["progress"] == 100:
+				self.convert_result = json["convert_result"]
 		return response
 
 	def download(self, file_path):
-		pass
+		assert self.convert_result != None, "Can't download without completing conversion first"
+		path = self.site + "download/%s/%s/%s" % (self.sid, self.fid, self.convert_result)
+		request = Request("GET", path)
+		response = self.__request(request, stream = True)
+		if not response.successful():
+			return False
+		request = response.request # For iterating through contents
+		try:
+			doc = open(file_path, "wb")
+		except IOError:
+			return False
+		with doc:
+			for chunk in request.iter_content(chunk_size = 1024):
+				doc.write(chunk)
+		request.close()
+		return True
 
-	def __request(self, request, json = True):
+
+
+	def __request(self, request, json = True, stream = False):
 		try:
 			request = self.session.prepare_request(request)
-			request = self.session.send(request)
+			request = self.session.send(request, stream = stream)
 			request.raise_for_status()
 			if json == True:
 				json = request.json()

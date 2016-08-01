@@ -39,7 +39,11 @@ if test.online():
 		time.sleep(1)
 	print_response(status)
 	if status.successful():
-		print("Document available for download at %s" % status.json["convert_result"])
+		print("### Downloading ###")
+		file_path = status.json["convert_result"]
+		print("Saving to file: %s" % file_path)
+		test.download(file_path)
+
 	else:
 		print("Failed to retrieve status")
 else:
