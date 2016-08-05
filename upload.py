@@ -11,6 +11,7 @@ class Upload:
 		self.file_name = file_name
 		if not file_name:
 			self.file_name = os.path.basename(file_path)
+		self.file_size = 1
 		self.site = "http://pdf2doc.com/"
 		self.sid = self.__sid()
 		self.fid = self.__fid()
@@ -31,7 +32,6 @@ class Upload:
 		]
 		formdata = MultipartEncoder(formdata)
 		boundary = formdata.boundary[2:]
-		self.upload_size = formdata.len
 		header = {"Content-Type": "multipart/form-data, boundary=" + boundary}
 		monitor = MultipartEncoderMonitor(formdata, progress_callback)
 		request = Request("POST", path, data = monitor, headers = header)

@@ -1,23 +1,31 @@
-from Tkinter import *
-from ttk import *
-import pygubu
+from __future__ import division
+from ui import UI
+from upload import Upload
+import sys, os
 
-def main():
-	root = Tk()
-	root.title("The pdf2doc Utility")
-	root.resizable(width = False, height = False)
-	main = Frame(width = 500, height = 200)
-	main.grid()
-	micro_label = Label(main, text = "Uploading...")
-	micro_label.grid(row = 1, sticky = "w", padx = 25, pady = 10)
-	micro_bar = Progressbar(main, length = 400)
-	micro_bar.grid(row = 2, padx = 25)
-	macro_label = Label(main, text = "Testing...")
-	macro_label.grid(row = 3, sticky = "w", padx = 25, pady = 10)
-	macro_bar = Progressbar(main, length = 400)
-	macro_bar.grid(row = 4, padx = 25, ipady = 10)
-	print("Ready")
-	root.mainloop()
+def print_response(response):
+	print("Response: %s" % response.json)
+	if response.error:
+		print("Error: %s" % response.error)
+		print("Stack Trace: ")
+		print(response.stack_trace)
 
-if __name__ == '__main__':
-  main()
+def routine():
+	if len(sys.argv) != 2 or not sys.argv[1].lower().endswith(".pdf"):
+		ui.info("Drag a PDF on top of the application to begin converting it.")
+	elif not os.path.isfile(sys.argv[1]):
+		ui.error("Incompatible File", "The file that was dragged onto the application cannot be converted. Make sure it is in PDF format.")
+	file_name = sys.argv[1]
+	upload = Upload(file_name)
+	if not upload.online():
+		ui.error("Network Failure", "Couldn't reach http://pdf2doc.com - Perhaps the website or your Internet is down.")
+	ui.set_micro("Website online. Beginning upload...", 0)
+	upload_size = 1
+	def progress(monitor):
+		text = "Uploading... %s / %s bytes" % (monitor.bytes_read, monitor.len)
+		percent = (monitor.bytes_read / monitor.len) * 100
+		ui.set_micro(text, percent)
+	response = upload.upload(progress)
+ui = UI()
+ui.root.after(500, routine)
+ui.render()
