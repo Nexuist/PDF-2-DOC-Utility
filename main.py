@@ -1,16 +1,28 @@
 from __future__ import division
 from ui import UI
 from upload import Upload
+from response import Response
 import sys, os
 
-def print_response(response):
-	print("Response: %s" % response.json)
-	if response.error:
-		print("Error: %s" % response.error)
-		print("Stack Trace: ")
-		print(response.stack_trace)
+VERBOSE = True
 
-def routine():
+def debug(msg):
+	if not VERBOSE:
+		return
+	if isinstance(msg, Response):
+		print("Response: %s" % msg.json)
+		if msg.error:
+			print("Error: %s" % msg.error)
+			print("Stack Trace: ")
+			print(msg.stack_trace)
+	else:
+		print msg
+
+
+r = Response(None)
+debug(r)
+
+def main():
 	if len(sys.argv) != 2 or not sys.argv[1].lower().endswith(".pdf"):
 		ui.info("Drag a PDF on top of the application to begin converting it.")
 	elif not os.path.isfile(sys.argv[1]):
@@ -26,6 +38,6 @@ def routine():
 		percent = (monitor.bytes_read / monitor.len) * 100
 		ui.set_micro(text, percent)
 	response = upload.upload(progress)
-ui = UI()
-ui.root.after(500, routine)
-ui.render()
+# ui = UI()
+# ui.root.after(500, main)
+# ui.render()
