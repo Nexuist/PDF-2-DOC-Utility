@@ -2,12 +2,12 @@ from __future__ import division
 from ui import UI
 from upload import Upload
 from response import Response
-import sys, os
+import sys, os, time
 
 global VERBOSE
-VERBOSE = False
+VERBOSE = False # Activates debug functionality if set to true
 
-def debug(msg):
+def debug(msg): # Prints out response if msg is a Response object, otherwise act like regular print
 	if not VERBOSE:
 		return
 	if isinstance(msg, Response):
@@ -31,27 +31,33 @@ def main():
 	file_name = sys.argv[1]
 	debug("Using file name: %s" % file_name)
 	upload = Upload(file_name)
+	# ENSURE CONNECTIVITY
 	ui.set_micro("Ensuring connectivity...", 0)
 	ui.set_macro("(1/3) Uploading PDF... ", 33)
 	if not upload.online():
 		ui.error("Network Failure", "Couldn't reach http://pdf2doc.com - Perhaps the website or your Internet is down.")
 	ui.set_micro("Website online. Beginning upload...", 0)
-	def progress(monitor):
+	# UPLOAD
+	def progress(monitor): # Callback for upload progress
 		text = "Uploading... %s / %s bytes" % (monitor.bytes_read, monitor.len)
 		percent = (monitor.bytes_read / monitor.len) * 100
 		ui.set_micro(text, percent)
 	response = upload.upload(progress)
-	debug("UPLOAD:")
+	debug("UPLOAD")
 	debug(response)
 	if response.error:
 		ui.error("Upload Failure", "Error: %s" % response.error)
-	ui.set_macro("(2/3) Converting...", 33)
+	# REQUEST CONVERSION
 	ui.set_micro("Requesting conversion...", 0)
+	ui.set_macro("(2/3) Converting...", 33)
 	response = upload.convert()
-	debug("CONVERT:")
+	debug("CONVERT")
 	debug(response)
 	if response.error:
 		ui.error("Conversion Failure", "Error: %s" % response.error)
+	# MONITOR CONVERSION
+	ui.set_micro("Monitoring conversion...", 0)
+
 
 
 
