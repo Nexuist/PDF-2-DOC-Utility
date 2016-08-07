@@ -2,7 +2,7 @@ from __future__ import division
 from ui import UI
 from upload import Upload
 from response import Response
-import sys, os, time
+import sys, os, time, traceback
 
 VERBOSE = False # Activates debug functionality if set to true
 
@@ -57,26 +57,43 @@ def main():
 	# MONITOR CONVERSION
 	ui.set_micro("Monitoring conversion...", 0)
 	stop = False
+	convert_result = None
 	while not stop:
 		response = upload.status()
 		debug("MONITOR CONVERT")
 		debug(response)
 		if not response.successful():
 			ui.error("Conversion Failure", "Status Error: %s" % response.error)
-		progress = status.json["progress"]
+		progress = response.json["progress"]
 		ui.set_micro("Monitoring conversion...", progress)
 		if progress == 100:
-			if "convert_result" not in status.json:
-				ui.error("Conversion Failure", "Malformed Response")
 			stop = True
 			break
 		time.sleep(1)
 	# DOWNLOAD
-	ui.set_micro("Downloding.")
-
-
-
-
+	ui.set_micro("Sending download request...", 0)
+	ui.set_macro("(3/3) Downloading DOC...", 100)
+	response = upload.download()
+	debug("DOWNLOAD")
+	debug(response)
+	request = response.request
+	if not response.successful():
+		ui.error("Download Failure", "Request Error: %s"  % response.error)
+	try:
+		ui.set_micro("Opening file...", 0)
+		doc = open(file_path, "wb")
+		ui.set_micro("Writing to file...", 0)
+		with doc:
+			for chunk in request.iter_content(chunk_size = 1024):
+				doc.write(chunk)
+		request.close()
+	except IOError as e:
+		ui.error("Download Failure", "IOError: %s" % str(e))
+	except Exception as e:
+		debug(traceback.format_exc())
+		ui.error("Download Failure", "Uncaught Exception: %s" % str(e))
+	debug("DONE")
+	ui.quit()
 
 ui = UI()
 ui.root.after(500, main)

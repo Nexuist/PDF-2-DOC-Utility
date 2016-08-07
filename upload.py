@@ -72,24 +72,11 @@ class Upload:
 				self.convert_result = json["convert_result"]
 		return response
 
-	def download(self, convert_result, file_path):
-		path = self.site + "download/%s/%s/%s" % (self.sid, self.fid, convert_result)
+	def download(self):
+		path = self.site + "download/%s/%s/%s" % (self.sid, self.fid, self.convert_result)
 		request = Request("GET", path)
 		response = self.__request(request, json = False, stream = True)
 		return response
-		# print "Opening file"
-		# try:
-		# 	doc = open(file_path, "wb")
-		# except IOError:
-		# 	return False
-		# print "Writing to file"
-		# with doc:
-		# 	for chunk in request.iter_content(chunk_size = 1024):
-		# 		doc.write(chunk)
-		# request.close()
-		# return True
-
-
 
 	def __request(self, request, json = True, stream = False):
 		try:
