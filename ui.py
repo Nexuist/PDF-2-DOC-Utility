@@ -1,6 +1,8 @@
 from Tkinter import *
 from ttk import *
-import tkMessageBox, sys
+import tkMessageBox, sys, Queue
+
+# Threading and queue ideas gratefully provided by http://stupidpythonideas.blogspot.com/2013/10/why-your-gui-app-freezes.html
 
 class UI:
 	def __init__(self):
@@ -21,31 +23,43 @@ class UI:
 		self.micro_bar = micro_bar
 		self.macro_label = macro_label
 		self.macro_bar = macro_bar
+		self.queue = Queue.Queue()
 
-	def set_micro(self, text, value):
-		# self.micro_label.config(text = text)
-		# self.micro_bar.config(value = value)
-		pass
-
-	def set_macro(self, text, value):
-		# self.macro_label.config(text = text)
-		# self.macro_bar.config(value = value)
-		pass
-
-	def info(self, msg):
-		# tkMessageBox.showinfo("Information", msg)
-		# self.quit()
-		pass
-
-	def error(self, title, msg):
-		# tkMessageBox.showerror(title, msg)
-		# self.quit()
-		pass
+	def schedule(self, func):
+		self.queue.put(func)
 
 	def render(self):
+		while True:
+			try:
+				command = self.queue.get(block = False)
+			except Queue.Empty:
+				break
+			else:
+				print "Gotem!"
+				self.root.after_idle(command)
+		self.root.after(100, self.render)
+
+	def start(self):
+		self.root.after(100, self.render)
 		self.root.mainloop()
 
 	def quit(self):
-		# self.root.destroy()
-		# sys.exit(1)
-		pass
+		print("Quit")
+		self.schedule(lambda: self.root.destroy())
+		self.schedule(lambda: sys.exit(1))
+
+	def set_micro(self, text, value):
+		self.schedule(lambda: self.micro_label.config(text = text))
+		self.schedule(lambda: self.micro_bar.config(value = value))
+
+	def set_macro(self, text, value):
+		self.schedule(lambda: self.macro_label.config(text = text))
+		self.schedule(lambda: self.macro_bar.config(value = value))
+
+	def info(self, msg):
+		self.schedule(lambda: tkMessageBox.showinfo("Information", msg))
+		self.schedule(lambda: self.quit())
+
+	def error(self, title, msg):
+		self.schedule(lambda: tkMessageBox.showerror(title, msg))
+		self.schedule(lambda: self.quit())
