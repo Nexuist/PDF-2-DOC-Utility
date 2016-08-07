@@ -23,24 +23,29 @@ class UI:
 		self.macro_bar = macro_bar
 
 	def set_micro(self, text, value):
-		self.micro_label.config(text = text)
-		self.micro_bar.config(value = value)
+		# self.micro_label.config(text = text)
+		# self.micro_bar.config(value = value)
+		pass
 
 	def set_macro(self, text, value):
-		self.macro_label.config(text = text)
-		self.macro_bar.config(value = value)
+		# self.macro_label.config(text = text)
+		# self.macro_bar.config(value = value)
+		pass
 
 	def info(self, msg):
-		tkMessageBox.showinfo("Information", msg)
-		self.quit()
+		# tkMessageBox.showinfo("Information", msg)
+		# self.quit()
+		pass
 
 	def error(self, title, msg):
-		tkMessageBox.showerror(title, msg)
-		self.quit()
+		# tkMessageBox.showerror(title, msg)
+		# self.quit()
+		pass
 
 	def render(self):
 		self.root.mainloop()
 
 	def quit(self):
-		self.root.destroy()
-		sys.exit(1)
+		# self.root.destroy()
+		# sys.exit(1)
+		pass
