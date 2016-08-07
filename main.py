@@ -4,7 +4,6 @@ from upload import Upload
 from response import Response
 import sys, os, time
 
-global VERBOSE
 VERBOSE = False # Activates debug functionality if set to true
 
 def debug(msg): # Prints out response if msg is a Response object, otherwise act like regular print
@@ -45,7 +44,7 @@ def main():
 	response = upload.upload(progress)
 	debug("UPLOAD")
 	debug(response)
-	if response.error:
+	if not response.successful():
 		ui.error("Upload Failure", "Error: %s" % response.error)
 	# REQUEST CONVERSION
 	ui.set_micro("Requesting conversion...", 0)
@@ -53,10 +52,28 @@ def main():
 	response = upload.convert()
 	debug("CONVERT")
 	debug(response)
-	if response.error:
-		ui.error("Conversion Failure", "Error: %s" % response.error)
+	if not response.successful():
+		ui.error("Conversion Failure", "Monitor Error: %s" % response.error)
 	# MONITOR CONVERSION
 	ui.set_micro("Monitoring conversion...", 0)
+	stop = False
+	while not stop:
+		response = upload.status()
+		debug("MONITOR CONVERT")
+		debug(response)
+		if not response.successful():
+			ui.error("Conversion Failure", "Status Error: %s" % response.error)
+		progress = status.json["progress"]
+		ui.set_micro("Monitoring conversion...", progress)
+		if progress == 100:
+			if "convert_result" not in status.json:
+				ui.error("Conversion Failure", "Malformed Response")
+			stop = True
+			break
+		time.sleep(1)
+	# DOWNLOAD
+	ui.set_micro("Downloding.")
+
 
 
 

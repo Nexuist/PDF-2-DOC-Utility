@@ -1,6 +1,6 @@
 from Tkinter import *
 from ttk import *
-import tkMessageBox
+import tkMessageBox, sys
 
 class UI:
 	def __init__(self):
@@ -43,3 +43,4 @@ class UI:
 
 	def quit(self):
 		self.root.destroy()
+		sys.exit(1)
