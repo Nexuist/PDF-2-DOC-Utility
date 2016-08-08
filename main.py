@@ -1,7 +1,6 @@
 from __future__ import division
 from worker import Worker
 from ui import UI
-import time
 
 ui = UI()
 worker = Worker(ui)

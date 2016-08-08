@@ -1,7 +1,7 @@
 from threading import Thread
 from ui import UI
 from api import API
-import sys, random, time
+import sys, random, time, os
 
 class Worker(Thread):
 	def __init__(self, ui):
@@ -17,7 +17,7 @@ class Worker(Thread):
 
 	def run(self):
 		if len(sys.argv) < 2 or not sys.argv[1].lower().endswith(".pdf"):
-			self.ui.info("Drag a PDF on top of the application to begin converting it.")
+			self.ui.error("No File Given", "Drag a PDF on top of the application to begin converting it.")
 			return
 		elif not os.path.isfile(sys.argv[1]):
 			self.ui.error("Incompatible File", "The file that was dragged onto the application cannot be converted. Make sure it is in PDF format.")

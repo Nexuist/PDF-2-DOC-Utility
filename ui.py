@@ -57,8 +57,7 @@ class UI:
 		self.schedule(lambda: self.macro_label.config(text = text))
 		self.schedule(lambda: self.macro_bar.config(value = value))
 
-	def info(self, msg):
-		self.schedule(lambda: tkMessageBox.showinfo("Information", msg))
-
 	def error(self, title, msg):
 		self.schedule(lambda: tkMessageBox.showerror(title, msg))
+		self.set_micro("Error - restart application.", 0)
+		self.set_macro("", 0)
