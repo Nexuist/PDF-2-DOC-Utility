@@ -23,19 +23,22 @@ class UI:
 		self.micro_bar = micro_bar
 		self.macro_label = macro_label
 		self.macro_bar = macro_bar
+		self.should_quit = False
 		self.queue = Queue.Queue()
 
 	def schedule(self, func):
 		self.queue.put(func)
 
 	def render(self):
+		if self.should_quit:
+			self.root.destroy()
+			sys.exit(0)
 		while True:
 			try:
 				command = self.queue.get(block = False)
 			except Queue.Empty:
 				break
 			else:
-				print "Gotem!"
 				self.root.after_idle(command)
 		self.root.after(100, self.render)
 
@@ -44,9 +47,7 @@ class UI:
 		self.root.mainloop()
 
 	def quit(self):
-		print("Quit")
-		self.schedule(lambda: self.root.destroy())
-		self.schedule(lambda: sys.exit(1))
+		self.should_quit = True
 
 	def set_micro(self, text, value):
 		self.schedule(lambda: self.micro_label.config(text = text))
@@ -58,8 +59,6 @@ class UI:
 
 	def info(self, msg):
 		self.schedule(lambda: tkMessageBox.showinfo("Information", msg))
-		self.schedule(lambda: self.quit())
 
 	def error(self, title, msg):
 		self.schedule(lambda: tkMessageBox.showerror(title, msg))
-		self.schedule(lambda: self.quit())
