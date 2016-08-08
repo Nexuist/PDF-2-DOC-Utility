@@ -1,7 +1,7 @@
 import math, random, time, string, os, traceback
 from response import Response
 from requests import Request, Session
-from requests.exceptions import RequestException, ConnectionError, HTTPError
+from requests.exceptions import RequestException, ConnectionError, HTTPError, ReadTimeout
 from requests_toolbelt import MultipartEncoder, MultipartEncoderMonitor
 
 class API:
@@ -93,7 +93,7 @@ class API:
 				msg = "Malformed response: Couldn't decode JSON"
 			elif type(e) == HTTPError:
 				msg = "Server Error: Returned status code " + str(request.status_code)
-			elif type(e) == ConnectionError:
+			elif type(e) == ConnectionError or type(e) == ReadTimeout:
 				msg = "Network problem: Couldn't reach website"
 			elif type(e) == RequestException:
 				msg = "Internal error: Requests library error"
