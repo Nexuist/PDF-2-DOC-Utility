@@ -1,7 +1,3 @@
-### Backstory
-
-The website http://pdf2doc.com/ offers the ability to convert PDF files to Word documents online. During testing, it was found to be a better converter than many other online and offline alternatives. I wanted to develop a local client that utilized this website behind the scenes.
-
 ### Goal
 
 Discover how a browser interacts with pdf2doc.com and reverse engineer a solution that does not require a browser.
