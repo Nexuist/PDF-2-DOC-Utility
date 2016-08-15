@@ -14,9 +14,32 @@ The website http://pdf2doc.com/ offers the ability to convert PDF files to Word 
 
 Windows and OS X binaries will be available soon.
 
+[//]: # "Make sure UI looks right!"
+
+### Usage
+
+Via console:
+>python main.py pdf
+
+Alternatively, in Windows, you can simply drag a PDF over `main.py` to begin the procedure. This is because, in Windows, any file dragged over an executable is added as a command line argument.
+
+The file must end in `pdf`. The software will open up a window where you can view the progress of the conversion and any errors that may be encountered. Finally, the converted `doc` will be downloaded and placed into the same directory as the executable.
+
 ### Exploration
 
 The process of reverse engineering http://pdf2doc.com/ was outlined in [RESEARCH.md](/RESEARCH.md).
+
+### Next Steps
+
+* Save the file in the same directory as the PDF that was given as input
+
+* Simplify code?
+
+* Windows release
+
+* OS X release?
+	* Can be done with py2app
+	* OS X already comes with Python, so the only trouble saved will be through avoiding dependencies
 
 ### License
 
