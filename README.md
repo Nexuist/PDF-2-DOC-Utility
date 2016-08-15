@@ -27,7 +27,7 @@ The file must end in `pdf`. The software will open up a window where you can vie
 
 ### Exploration
 
-The process of reverse engineering http://pdf2doc.com/ was outlined in [RESEARCH.md](/RESEARCH.md).
+The process of reverse engineering http://pdf2doc.com/ was outlined in [EXPLORATION.md](/EXPLORATION.md).
 
 ### Next Steps
 
