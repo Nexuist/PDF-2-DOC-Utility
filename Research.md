@@ -183,4 +183,4 @@ A combination of the Chrome Developer Tools and the `curl` command line utility 
 
 ### Next Steps
 
-I will be using Python 2.7 with the [requests]() library to automate this process. In addition, I will utilize [Tkinter]() and [py2exe]() to package the software into a Windows executable with a GUI.
+I will be using Python 2.7 with the [requests](http://docs.python-requests.org/en/master/) library to automate this process. In addition, I will utilize [Tkinter](https://wiki.python.org/moin/TkInter) and [py2exe](http://www.py2exe.org/) to package the software into a Windows executable with a GUI.
