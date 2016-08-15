@@ -18,7 +18,7 @@ class UI:
 		macro_label = Label(frame)
 		macro_label.grid(row = 3, sticky = "w", padx = 25, pady = 10)
 		macro_bar = Progressbar(frame, length = 400)
-		macro_bar.grid(row = 4, padx = 25, ipady = 10)
+		macro_bar.grid(row = 4, padx = 25, pady = 10)
 		self.micro_label = micro_label
 		self.micro_bar = micro_bar
 		self.macro_label = macro_label

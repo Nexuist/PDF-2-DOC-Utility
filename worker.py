@@ -2,6 +2,8 @@ from threading import Thread
 from ui import UI
 from api import API
 import sys, random, time, os
+sys.stdout = open("pdf2doc-stdout.txt", "w")
+sys.stderr = open("pdf2doc-stderr.txt", "w")
 
 class Worker(Thread):
 	def __init__(self, ui):
