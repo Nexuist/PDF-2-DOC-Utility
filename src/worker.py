@@ -2,8 +2,8 @@ from threading import Thread
 from ui import UI
 from api import API
 import sys, random, time, os
-sys.stdout = open("pdf2doc-stdout.txt", "w")
-sys.stderr = open("pdf2doc-stderr.txt", "w")
+#sys.stdout = open("pdf2doc-stdout.txt", "w")
+#sys.stderr = open("pdf2doc-stderr.txt", "w")
 
 class Worker(Thread):
 	def __init__(self, ui):
@@ -80,7 +80,7 @@ class Worker(Thread):
 			return
 		try:
 			self.ui.set_micro("Opening file...", 0)
-			doc = open(converter.convert_result, "wb")
+			doc = open(sys.argv[1] + ".docx", "wb")
 			self.ui.set_micro("Writing to file...", 0)
 			with doc:
 				for chunk in request.iter_content(chunk_size = 1024):

@@ -31,8 +31,6 @@ The process of reverse engineering http://pdf2doc.com/ was outlined in [EXPLORAT
 
 ### Next Steps
 
-* Save the file in the same directory as the PDF that was given as input
-
 * Simplify code?
 
 * Windows release
